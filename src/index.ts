@@ -4,7 +4,6 @@ import express from "express";
 const app = express();
 
 // Middleware: cho phép server đọc được JSON trong request body
-// Nếu không có dòng này, req.body sẽ luôn là undefined
 app.use(express.json());
 
 // Định nghĩa PORT - đọc từ biến môi trường, nếu không có thì dùng 3000
