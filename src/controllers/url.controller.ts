@@ -1,7 +1,5 @@
 import type { Request, Response } from "express";
-
-// Tạo nơi lưu trữ data Map<shortCode, originalUrl>
-const urlStore = new Map<string, string>();
+import prisma from "../lib/prisma";
 
 // Hàm sinh chuỗi ngẫu nhiên 6 ký tự
 function generateRandomCode(): string {
@@ -9,7 +7,7 @@ function generateRandomCode(): string {
 }
 
 // Controller 1: Nhận URL dài, trả về URL ngắn
-export function shortenerUrl(req: Request, res: Response): void {
+export async function shortenerUrl(req: Request, res: Response): Promise<void> {
   // lấy URL từ người dùng
   const { originalUrl } = req.body as { originalUrl: string };
   // Kiểm tra người dùng có gửi URL không
@@ -24,28 +22,49 @@ export function shortenerUrl(req: Request, res: Response): void {
     res.status(400).json({ error: "URL không hợp lệ" });
     return;
   }
-  // Sinh code và lưu vào store
+  //  Sinh code và lưu code vào database
   let code: string;
-  //  Kiểm tra code có trùng không
-  do {
-    code = generateRandomCode();
-  } while (urlStore.has(code));
-  urlStore.set(code, originalUrl);
+  let created: boolean = false;
+  let url: any;
+  while (!created) {
+    try {
+      code = generateRandomCode();
+
+      const url = await prisma.url.create({
+        data: { code, originalUrl },
+      });
+      created = true;
+    } catch (error: any) {
+      // Nếu không phải lỗi unique thì throw lỗi
+      if (error.code != "P2002") {
+        throw error;
+      }
+    }
+  }
 
   // Trả về 201 Created với shortUrl
-  const shortUrl = `http://localhost:3000/${code}`;
-  res.status(201).json({ shortUrl, code });
+  res
+    .status(201)
+    .json({ shortUrl: `http://localhost:3000/${url.code}`, code: url.code });
 }
 // Controller 2: Nhận short code, redirect đến URL gốc
-export function redirectUrl(req: Request, res: Response): void {
+export async function redirectUrl(req: Request, res: Response): Promise<void> {
   // req.params.code là phần động trong URL
   const { code } = req.params as { code: string };
-  //   Lấy originUrl trong urlStore
-  const originUrl = urlStore.get(code);
+  //   Lấy url trong database
+  const url = await prisma.url.fineUnique({ where: { code } });
+
   //   Kiểm tra có lấy thành công không
-  if (!originUrl) {
+  if (!url) {
     res.status(404).json({ error: "Link không tồn tại" });
     return;
   }
-  res.redirect(301, originUrl)
+
+  // Cộng thêm 1 vào số lần click link
+  await prisma.url.update({
+    where: {code},
+    data: {clicks: {increment: 1}}
+  })
+
+  res.redirect(301, url.originalUrl);
 }
