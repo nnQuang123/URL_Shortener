@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import prisma from "../lib/prisma";
+import db from "../lib/db";
 
 // Hàm sinh chuỗi ngẫu nhiên 6 ký tự
 function generateRandomCode(): string {
@@ -7,7 +7,7 @@ function generateRandomCode(): string {
 }
 
 // Controller 1: Nhận URL dài, trả về URL ngắn
-export async function shortenerUrl(req: Request, res: Response): Promise<void> {
+export function shortenerUrl(req: Request, res: Response): void {
   // lấy URL từ người dùng
   const { originalUrl } = req.body as { originalUrl: string };
   // Kiểm tra người dùng có gửi URL không
@@ -23,48 +23,45 @@ export async function shortenerUrl(req: Request, res: Response): Promise<void> {
     return;
   }
   //  Sinh code và lưu code vào database
-  let code: string;
   let created: boolean = false;
-  let url: any;
+  let code;
   while (!created) {
     try {
       code = generateRandomCode();
-
-      const url = await prisma.url.create({
-        data: { code, originalUrl },
-      });
+      db.prepare(
+        `
+    INSERT INTO urls (code, original_url) VALUES (?, ?)
+  `,
+      ).run(code, originalUrl);
       created = true;
     } catch (error: any) {
-      // Nếu không phải lỗi unique thì throw lỗi
-      if (error.code != "P2002") {
-        throw error;
-      }
+      throw error;
     }
   }
 
   // Trả về 201 Created với shortUrl
   res
     .status(201)
-    .json({ shortUrl: `http://localhost:3000/${url.code}`, code: url.code });
+    .json({ shortUrl: `http://localhost:3000/${code}`, code: code });
 }
 // Controller 2: Nhận short code, redirect đến URL gốc
-export async function redirectUrl(req: Request, res: Response): Promise<void> {
+export function redirectUrl(req: Request, res: Response): void {
   // req.params.code là phần động trong URL
   const { code } = req.params as { code: string };
+
   //   Lấy url trong database
-  const url = await prisma.url.fineUnique({ where: { code } });
+  const row = db
+    .prepare("SELECT original_url FROM urls WHERE code = ?")
+    .get(code) as { original_url: string } | undefined;
 
   //   Kiểm tra có lấy thành công không
-  if (!url) {
+  if (!row) {
     res.status(404).json({ error: "Link không tồn tại" });
     return;
   }
 
   // Cộng thêm 1 vào số lần click link
-  await prisma.url.update({
-    where: {code},
-    data: {clicks: {increment: 1}}
-  })
+  db.prepare("UPDATE urls SET clicks = clicks + 1 WHERE code = ?").run(code);
 
-  res.redirect(301, url.originalUrl);
+  res.redirect(301, row.original_url);
 }
