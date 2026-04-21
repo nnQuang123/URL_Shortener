@@ -35,7 +35,7 @@ export function shortenerUrl(req: Request, res: Response): void {
       ).run(code, originalUrl);
       created = true;
     } catch (error: any) {
-      throw error;
+      if (error?.code !== 'SQLITE_CONSTRAINT_UNIQUE') throw error;
     }
   }
 
