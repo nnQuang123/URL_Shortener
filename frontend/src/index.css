@@ -1,0 +1,137 @@
+/* Tailwind CSS v4 — import trực tiếp */
+@import "tailwindcss";
+
+/* ===== Custom Theme ===== */
+@theme {
+  /* Color palette — tông tím-xanh hiện đại */
+  --color-primary: #0D7693;
+  --color-primary-light: #a78bfa;
+  --color-primary-dark: #5b21b6;
+
+  --color-surface: #0f0d1a;
+  --color-surface-card: #1a1726;
+  --color-surface-input: #232036;
+  --color-surface-hover: #2a2640;
+
+  --color-accent: #22d3ee;
+  --color-accent-light: #67e8f9;
+
+  --color-success: #34d399;
+  --color-error: #f87171;
+  --color-text: #e2e0eb;
+  --color-text-muted: #9b97b0;
+
+  /* Font family */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Box shadow cho card */
+  --shadow-glow: 0 0 60px rgba(124, 58, 237, 0.15),
+    0 0 120px rgba(34, 211, 238, 0.06);
+}
+
+/* ===== Global Styles ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-surface text-text font-sans antialiased;
+  min-height: 100vh;
+}
+
+/* ===== Custom utility classes ===== */
+
+/* Animated gradient background */
+.bg-gradient-animated {
+  background: linear-gradient(135deg, #031F39 0%, #1a1232 40%, #031F39 100%);
+  position: relative;
+}
+
+.bg-gradient-animated::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+      ellipse 600px 400px at 20% 30%,
+      rgba(124, 58, 237, 0.08),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 500px 300px at 80% 70%,
+      rgba(34, 211, 238, 0.06),
+      transparent
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Glass-morphism card */
+.glass-card {
+  background: rgba(26, 23, 38, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Smooth focus ring */
+.focus-ring {
+  @apply outline-none ring-2 ring-primary/40 ring-offset-2 ring-offset-surface;
+}
+
+/* Shimmer loading animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(124, 58, 237, 0.2),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Fade-in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* Pulse glow cho button */
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(124, 58, 237, 0.5);
+  }
+}
+
+.btn-glow:hover {
+  animation: pulseGlow 2s ease-in-out infinite;
+}

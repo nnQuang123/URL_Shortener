@@ -1,9 +1,13 @@
 import express from "express";
+import cors from "cors";
 import urlRouter from "./routes/url.routes";
 import { redirectUrl } from "./controllers/url.controller";
 
 // Khởi tạo ứng dụng Express
 const app = express();
+
+// Middleware: cho phép frontend gọi API từ domain khác (CORS)
+app.use(cors());
 
 // Middleware: cho phép server đọc được JSON trong request body
 app.use(express.json());
