@@ -7,7 +7,9 @@ import { redirectUrl } from "./controllers/url.controller";
 const app = express();
 
 // Middleware: cho phép frontend gọi API từ domain khác (CORS)
-app.use(cors());
+app.use(cors({
+  origin: "https://url-shortener-jnof.vercel.app",
+}));
 
 // Middleware: cho phép server đọc được JSON trong request body
 app.use(express.json());
