@@ -39,10 +39,11 @@ export function shortenerUrl(req: Request, res: Response): void {
     }
   }
 
-  // Trả về 201 Created với shortUrl
+  // Trả về 201 Created với shortUrl — tự tạo base URL từ request
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
   res
     .status(201)
-    .json({ shortUrl: `http://localhost:3000/${code}`, code: code });
+    .json({ shortUrl: `${baseUrl}/${code}`, code: code });
 }
 // Controller 2: Nhận short code, redirect đến URL gốc
 export function redirectUrl(req: Request, res: Response): void {

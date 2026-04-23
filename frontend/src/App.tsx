@@ -4,6 +4,9 @@ import Result from "./components/Result";
 import HistoryList from "./components/HistoryList";
 import type { ShortenResponse, ApiError, HistoryItem } from "./types";
 
+// Base URL của API — dùng biến môi trường hoặc fallback về relative path (dev mode)
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 // Key dùng để lưu history vào localStorage
 const STORAGE_KEY = "url-shortener-history";
 
@@ -51,7 +54,7 @@ export default function App() {
     setShortUrl(null);
 
     try {
-      const res = await fetch("/api/shorten", {
+      const res = await fetch(`${API_BASE}/api/shorten`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ originalUrl: url }),
